@@ -29,6 +29,7 @@ RESET_WIFI_CMD = "sudo ifdown wlan0;sleep 2;sudo ifup wlan0"
 CHECK_INTERNET_CMD = "sudo ping -q -w 1 -c 1 8.8.8.8 > /dev/null 2>&1 && echo U || echo D"
 CHECK_REVERSEPROXY_CMD = "ssh -i /home/pi/.ssh/anki_drone $reverseProxy \"netstat -ant | grep LISTEN | grep $PORT | wc -l\""
 CHECK_NODEUP_CMD = "wget -q -O - http://$reverseProxy:$PORT/drone > /dev/null && echo OK || echo NOK"
+CHECK_WEBSOCKET_CMD = "wget -q -O - http://$reverseProxy:$PORT/drone/ping > /dev/null && echo OK || echo NOK"
 RESET_AUTOSSH_CMD = "pkill autossh;/home/pi/bin/setupReverseSSHPorts.sh /home/pi/bin/redirects"
 RESET_NODEJS_CMD = "forever stop drone;forever start --uid drone --append /home/pi/dronecontrol/server.js"
 REBOOT_CMD = "sudo reboot"
@@ -67,11 +68,12 @@ def reversePortsDisplay(cad):
   cad.lcd.write("Please, wait...")
   prx_status=check_reverse_proxy()
   node_status=check_nodejs()
+  websocket_status=check_websocket()
   cad.lcd.clear()
   cad.lcd.set_cursor(0, 0)
   cad.lcd.write("PROXY STATUS:"+prx_status)
   cad.lcd.set_cursor(0, 1)
-  cad.lcd.write("NODE STATUS: "+node_status)
+  cad.lcd.write("NODE:"+node_status + " WS:" + websocket_status)
 
 def handleButton(button, screen, event):
   global buttonWaitingForConfirmation
@@ -93,7 +95,7 @@ def handleButton(button, screen, event):
 	  cad.lcd.clear()
 	  cad.lcd.set_cursor(0, 0)
 	  cad.lcd.write(msg)
-	  run_cmd(CMD)      
+	  run_cmd(CMD)
     if button == BUTTON1 or button == BUTTON2:
 	  buttonWaitingForConfirmation = button
 	  if button == BUTTON1:
@@ -151,7 +153,7 @@ def handleButton(button, screen, event):
 	  cad.lcd.clear()
 	  cad.lcd.set_cursor(0, 0)
 	  cad.lcd.write(msg)
-	  run_cmd(CMD)      
+	  run_cmd(CMD)
 	  displayInfoRotation(event.chip)
     if button == BUTTON1:
 	  buttonWaitingForConfirmation = button
@@ -179,7 +181,7 @@ def handleButton(button, screen, event):
 def buttonPressed(event):
 #  print "Event: "+str(event.pin_num)
   global currentInfoDisplay
-  
+
   if event.pin_num == BUTTONLEFT:
     if currentInfoDisplay > 0:
       currentInfoDisplay=currentInfoDisplay-1
@@ -202,7 +204,7 @@ def buttonPressed(event):
   else:
     event.chip.lcd.set_cursor(0, 14)
     event.chip.lcd.write(str(event.pin_num))
-  
+
 def run_cmd(cmd):
   msg = subprocess.check_output(cmd, shell=True).decode('utf-8')
   return msg
@@ -225,6 +227,9 @@ def check_reverse_proxy():
 
 def check_nodejs():
    return run_cmd(CHECK_NODEUP_CMD)
+
+def check_websocket():
+   return run_cmd(CHECK_WEBSOCKET_CMD)
 
 def getPiName():
   with open('/home/pi/PiInfo.txt', 'r') as f:
