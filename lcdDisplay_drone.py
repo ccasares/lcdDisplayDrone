@@ -71,7 +71,7 @@ def reversePortsDisplay(cad):
   websocket_status=check_websocket()
   cad.lcd.clear()
   cad.lcd.set_cursor(0, 0)
-  cad.lcd.write("PROXY STATUS:"+prx_status)
+  cad.lcd.write("PROXY:"+prx_status)
   cad.lcd.set_cursor(0, 1)
   cad.lcd.write("NODE:"+node_status )
   cad.lcd.set_cursor(9, 1)
