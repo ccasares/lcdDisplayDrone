@@ -73,7 +73,9 @@ def reversePortsDisplay(cad):
   cad.lcd.set_cursor(0, 0)
   cad.lcd.write("PROXY STATUS:"+prx_status)
   cad.lcd.set_cursor(0, 1)
-  cad.lcd.write("NODE:"+node_status + " WS:" + websocket_status)
+  cad.lcd.write("NODE:"+node_status )
+  cad.lcd.set_cursor(9, 1)
+  cad.lcd.write(" WS:" + websocket_status)
 
 def handleButton(button, screen, event):
   global buttonWaitingForConfirmation
